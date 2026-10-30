@@ -1,0 +1,23 @@
+# Render free-tier blueprint for the Asif Traders backend (FREE design).
+# No build step is needed: zero dependencies, plain Node.js.
+# NOTE on free tier: the SQLite file lives on the service's ephemeral
+# filesystem, so data can reset when the service restarts or redeploys.
+# That is acceptable for a small shop starting out, but it is NOT a
+# guarantee: arrange a persistent disk or an external database later if
+# the shop outgrows the free tier. See DEPLOY.md.
+services:
+  - type: web
+    name: asif-traders-backend
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node src/server.js
+    envVars:
+      - key: HOST
+        value: 0.0.0.0
+      - key: SMS_OTP_ENABLED
+        value: "false"
+      # PORT is set automatically by the host. Do NOT set it here.
+      # DB_PATH is intentionally left at its default (backend/data/shop.db)
+      # on the free tier; see the ephemeral-filesystem note above.
+      # TEST_MODE must stay unset/off in production.
