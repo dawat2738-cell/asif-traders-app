@@ -1,0 +1,1 @@
+{"description":"Portable backend foundation for the Asif Traders multi-user shop app. No vendor lock-in, no dependencies.","engines":{"node":">=22.5"},"name":"asif-traders-backend","private":true,"scripts":{"start":"node src/server.js","verify":"node verify.js"},"type":"module","version":"0.1.0"}
