@@ -130,6 +130,7 @@ const server = http.createServer(async (req, res) => {
     }
     if (method === "GET" && p === "/img/banner.png") return serveFile(res, config.bannerPath, "image/png");
     if (method === "GET" && p === "/img/profile.png") return serveFile(res, config.profilePath, "image/png");
+    if (method === "GET" && p === "/img/app-qr.png") return serveFile(res, path.join(here, "..", "public", "app-qr.png"), "image/png");
     if (method === "GET" && p.startsWith("/img/products/")) {
       const file = path.basename(p.slice("/img/products/".length));
       if (!file || file.includes("..")) return sendJson(res, 400, { error: "Bad image name." });

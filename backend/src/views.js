@@ -110,6 +110,7 @@ export function storefrontHTML(shop, opts = {}) {
 
   "<div class=\"panel\"><h2>Latest News / تازہ ترین خبریں</h2><div id=\"news\"></div></div>" +
   "<div class=\"panel\"><h2>Customer Reviews / کسٹمر ریویوز</h2><div id=\"reviews\"></div></div>" +
+  "<div class=\"panel\"><h2>Get the App / ایپ حاصل کریں</h2><p>Scan this QR code to open the shop on your phone, then add it to your home screen from Chrome — no Play Store install needed. / اس QR کوڈ کو اسکین کریں — دکان آپ کے فون پر کھل جائے گی، پھر Chrome سے Add to Home Screen کریں، Play Store کی ضرورت نہیں۔</p><p><img src=\"/img/app-qr.png\" alt=\"App download QR code\" style=\"width:220px;height:220px;background:#fff;padding:10px;border-radius:12px\"></p><p class=\"small\">Shop link / دکان کا لنک: https://asif-traders-app-7f6ad.containers.snapdeploy.app</p></div>" +
   "<div class=\"panel\" id=\"mine\" style=\"display:none\"><h2>My Orders / میرے آرڈرز</h2><div id=\"myorders\"></div></div>" +
 
   "</div>" + // wrap
