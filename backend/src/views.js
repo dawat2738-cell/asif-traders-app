@@ -39,6 +39,11 @@ label{font-size:14px;color:#c9d2ea}
 #cart{position:fixed;right:16px;bottom:16px;width:360px;max-width:92vw;background:#0f1e3d;border:2px solid #f5c542;border-radius:16px;padding:14px;z-index:20}
 #chat{position:fixed;left:16px;bottom:16px;width:340px;max-width:92vw;background:#0f1e3d;border:2px solid #f5c542;border-radius:16px;padding:12px;z-index:20}
 #chatlog{height:180px;overflow:auto;background:#070d1f;border-radius:10px;padding:8px;font-size:14px;white-space:pre-wrap}
+#chat{display:none} #chat.open{display:block}
+#cart{display:none} #cart.open{display:block}
+#chatfab{position:fixed;left:16px;bottom:16px;z-index:20;background:#f5c542;color:#070d1f;border:none;border-radius:999px;padding:12px 18px;font-weight:800;font-size:16px}
+#cartfab{position:fixed;right:16px;bottom:16px;z-index:20;background:#f5c542;color:#070d1f;border:none;border-radius:999px;padding:12px 18px;font-weight:800;font-size:16px}
+.xbtn{position:absolute;top:8px;right:10px;background:transparent;color:#ffe89a;border:1px solid #f5c542;border-radius:50%;width:30px;height:30px;font-size:16px;line-height:1;padding:0}
 .small{font-size:13px;color:#c9d2ea} .gold{color:#ffd75e}
 .tabs button{margin-right:6px} .tabpane{display:none} .tabpane.on{display:block}
 table{width:100%;border-collapse:collapse;font-size:14px} td,th{border-bottom:1px solid #24365f;padding:8px;text-align:left}
@@ -107,7 +112,7 @@ export function storefrontHTML(shop, opts = {}) {
 
   "</div>" + // wrap
 
-  "<div id=\"cart\"><h3 style=\"margin-top:0\">Cart / کارٹ</h3><div id=\"cartitems\" class=\"small\"></div>" +
+  "<div id=\"cart\"><h3 style=\"margin-top:0\">Cart / کارٹ <button class=\"xbtn\" onclick=\"toggleCart(false)\">✕</button></h3><div id=\"cartitems\" class=\"small\"></div>" +
   "<div id=\"payinfo\" class=\"small\"></div>" +
   "<label>Delivery area / ڈلیوری علاقہ</label><select id=\"zone\"><option value=\"lahore\">Within Lahore / لاہور کے اندر</option><option value=\"other\">Outside Lahore — Other City / لاہور سے باہر</option></select>" +
   "<div id=\"bill\" class=\"small\"></div>" +
@@ -115,10 +120,11 @@ export function storefrontHTML(shop, opts = {}) {
   "<label>Delivery address / ڈلیوری پتہ</label><textarea id=\"caddr\" rows=\"2\"></textarea>" +
   "<button onclick=\"checkout()\">Place Order / آرڈر کریں</button><p id=\"ordermsg\" class=\"small\"></p></div>" +
 
-  "<div id=\"chat\"><h3 style=\"margin-top:0\">Shop Assistant / شاپ اسسٹنٹ</h3><div id=\"chatlog\"></div>" +
+  "<div id=\"chat\"><h3 style=\"margin-top:0\">Shop Assistant / شاپ اسسٹنٹ <button class=\"xbtn\" onclick=\"toggleChat(false)\">✕</button></h3><div id=\"chatlog\"></div>" +
   "<input id=\"chatin\" placeholder=\"Ask something / کچھ پوچھیں\">" +
   "<button onclick=\"sendChat()\">Send / بھیجیں</button></div>" +
 
+  "<button id=\"chatfab\" onclick=\"toggleChat(true)\">💬 Chat / چیٹ</button><button id=\"cartfab\" onclick=\"toggleCart(true)\">🛒 Cart / کارٹ</button>" +
   "<script>" + storefrontJS() + "</script></body></html>";
 }
 
@@ -240,6 +246,8 @@ async function loadPayInfo(){
     }).join(' · ');
   }catch(e){}
 }
+function toggleChat(open){ var p=document.getElementById('chat'); if(!p) return; p.classList.toggle('open', open); var f=document.getElementById('chatfab'); if(f) f.style.display = open ? 'none' : 'block'; }
+function toggleCart(open){ var p=document.getElementById('cart'); if(!p) return; p.classList.toggle('open', open); var f=document.getElementById('cartfab'); if(f) f.style.display = open ? 'none' : 'block'; }
 async function sendChat(){
   var inp = document.getElementById('chatin'); if(!inp.value) return;
   var log = document.getElementById('chatlog');
