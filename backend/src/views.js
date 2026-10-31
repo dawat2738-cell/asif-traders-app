@@ -2,6 +2,7 @@
 // dark navy + gold theme, big photo-dominant product cards.
 // No public azala / replacement / cancellation / refund promise is rendered
 // anywhere here. Customer bills show only that customer's own data.
+// Redeploy trigger 2026-10-31: chat/cart panels start closed (auto-deploy check).
 import { shopPublic } from "./config.js";
 
 export function esc(s) {
