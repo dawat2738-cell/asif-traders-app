@@ -117,7 +117,7 @@ try {
 
   console.log("== Policy + privacy rules still hold in FREE mode ==");
   r = await anon.req("/api/products");
-  check("64 products still seeded", r.json.products.length === 64);
+  check("69 products still seeded", r.json.products.length === 69);
   const dish6 = r.json.products.find((p) => p.id === "dish-6ft");
   check("6ft dish still has NO brand name", dish6 && !/shabbir/i.test(dish6.nameEn));
   r = await anon.req("/api/bill/preview", "POST", { items: [{ productId: "android-box-01", qty: 1 }], zone: "lahore" });

@@ -67,8 +67,8 @@ export function shopPublic() {
     timings: {
       shopEn: "Physical shop: 10 AM – 9 PM",
       shopUr: "فزیکل شاپ: صبح 10 بجے سے رات 9 بجے تک",
-      onlineEn: "Online orders: 24/7 — contact any time",
-      onlineUr: "آن لائن آرڈر: 24 گھنٹے، کسی بھی وقت رابطہ کریں",
+      onlineEn: "Online (IPTV, recharge): 24/7 — contact any time",
+      onlineUr: "آن لائن (IPTV، ریچارج): 24 گھنٹے، کسی بھی وقت رابطہ کریں",
       installEn: "Dish installation/setting: contact 24/7, work at agreed time within shop hours",
       installUr: "ڈش انسٹالیشن/سیٹنگ: رابطہ 24 گھنٹے، کام طے شدہ وقت پر شاپ ٹائمنگ میں",
     },

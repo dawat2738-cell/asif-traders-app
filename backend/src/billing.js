@@ -67,7 +67,7 @@ export function computeBill(items, deliveryZone, orderKinds) {
     // travel/installation arrangement) is settled with the seller privately.
     deliveryFee = null;
     deliveryNote = "To be settled with the seller / سیلر سے طے ہوگا";
-    paymentTerms = "Price on Contact — seller confirms the amount; installation: part advance, rest after installation; Dish TV recharge: advance only / قیمت رابطہ پر — سیلر رقم بتائے گا؛ انسٹالیشن: کچھ ایڈوانس، باقی انسٹالیشن کے بعد؛ ڈش ٹی وی ریچارج: صرف ایڈوانس";
+    paymentTerms = "Price on Contact — seller confirms the amount; installation: part advance, rest after installation; IPTV/recharge: advance only, IPTV trial FREE / قیمت رابطہ پر — سیلر رقم بتائے گا؛ انسٹالیشن: کچھ ایڈوانس، باقی انسٹالیشن کے بعد؛ IPTV/ریچارج: صرف ایڈوانس، IPTV ٹرائل مفت";
     advanceDue = 0; // seller sets it privately after contact
   }
   const totalDue = subtotal + (deliveryFee || 0);
