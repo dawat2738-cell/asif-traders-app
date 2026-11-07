@@ -110,6 +110,12 @@ export function storefrontHTML(shop, opts = {}) {
 
   "<div class=\"panel\"><h2>Latest News / تازہ ترین خبریں</h2><div id=\"news\"></div></div>" +
   "<div class=\"panel\"><h2>Customer Reviews / کسٹمر ریویوز</h2><div id=\"reviews\"></div></div>" +
+  "<div class=\"panel\"><h2>Hamara Wada / ہمارا وعدہ</h2>" +
+  "<p>• Har parcel ki <b>asal tracking ID</b> di jayegi, courier ki official tracking page ka link saath. / ہر پارسل کی اصل ٹریکنگ آئی ڈی دی جائے گی، کوریئر کی آفیشل ٹریکنگ پیج کا لنک ساتھ۔</p>" +
+  "<p>• <b>Koi jhooti live tracking nahi</b> — status sirf tab badalta hai jab courier parcel scan karta hai. Ye live GPS nahi hai. / کوئی جھوٹی لائیو ٹریکنگ نہیں — اسٹیٹس صرف تب بدلتا ہے جب کوریئر پارسل اسکین کرتا ہے۔ یہ لائیو GPS نہیں ہے۔</p>" +
+  "<p>• Delivery ki tareekh sirf <b>andaza</b> hai — 'Estimated delivery' likh kar di jayegi. / ڈلیوری کی تاریخ صرف اندازہ ہے — 'Estimated delivery' لکھ کر دی جائے گی۔</p>" +
+  "<p>• Bill mein sab saaf — subtotal, delivery, advance — koi chhupi hui baat nahi. / بل میں سب صاف — سب ٹوٹل، ڈلیوری، ایڈوانس — کوئی چھپی ہوئی بات نہیں۔</p>" +
+  "<p>• Jo likha hai, wahi milega. / جو لکھا ہے، وہی ملے گا۔</p></div>" +
   "<div class=\"panel\"><h2>Get the App / ایپ حاصل کریں</h2><p>Scan this QR code to open the shop on your phone, then add it to your home screen from Chrome — no Play Store install needed. / اس QR کوڈ کو اسکین کریں — دکان آپ کے فون پر کھل جائے گی، پھر Chrome سے Add to Home Screen کریں، Play Store کی ضرورت نہیں۔</p><p><img src=\"/img/app-qr.png\" alt=\"App download QR code\" style=\"width:220px;height:220px;background:#fff;padding:10px;border-radius:12px\"></p><p class=\"small\">Shop link / دکان کا لنک: https://asif-traders-app-7f6ad.containers.snapdeploy.app</p></div>" +
   "<div class=\"panel\" id=\"mine\" style=\"display:none\"><h2>My Orders / میرے آرڈرز</h2><div id=\"myorders\"></div></div>" +
 
@@ -222,9 +228,22 @@ async function showMine(){
     document.getElementById('mine').style.display = 'block';
     document.getElementById('myorders').innerHTML = d.orders.length ? d.orders.map(function(o){
       return '<div class="panel"><b>' + esc(o.order_no) + '</b> — ' + esc(o.status) + ' — Rs ' + o.subtotal +
-      '<br><span class="small">' + esc(o.delivery_note) + '</span></div>';
+      '<br><span class="small">' + esc(o.delivery_note) + '</span>' + trackHtml(o) + '</div>';
     }).join('') : 'No orders yet / ابھی کوئی آرڈر نہیں';
   }catch(e){ document.getElementById('myorders').textContent = 'Please login first / پہلے لاگ ان کریں'; document.getElementById('mine').style.display = 'block'; }
+}
+// Honest tracking: show the real tracking ID + a link to the courier's own
+// tracking page. No fake live tracking, no countdown pretending to be live.
+var TRACK_URLS = { 'TCS': 'https://www.tcsexpress.com/track', 'Leopards': 'https://pk.leopardscourier.com/tracking', 'PostEx': 'https://postex.pk/tracking', 'Trax': 'https://trax.pk/tracking', 'M&P': 'https://mulphilog.com' };
+function trackHtml(o){
+  if(o.tracking_id){
+    var u = TRACK_URLS[o.courier] || '';
+    return '<br><span class="gold">Tracking ID / ٹریکنگ آئی ڈی: ' + esc(o.tracking_id) + '</span>' +
+    (o.courier ? ' (' + esc(o.courier) + ')' : '') +
+    (u ? ' <a href="' + u + '" target="_blank" rel="noopener">Track on ' + esc(o.courier) + ' / ٹریک کریں</a>' : '') +
+    '<br><span class="small">Status courier ki website par scan hone par badalta hai — ye live GPS nahi hai. / اسٹیٹس کوریئر کی ویب سائٹ پر اسکین ہونے پر بدلتا ہے — یہ لائیو GPS نہیں ہے۔</span>';
+  }
+  return '<br><span class="small">Tracking ID dispatch ke baad di jayegi. / ٹریکنگ آئی ڈی روانگی کے بعد دی جائے گی۔</span>';
 }
 async function loadNews(){
   var d = await api('/api/announcements');
@@ -367,6 +386,11 @@ async function loadOrders(){
       '<br><label>Advance decision (PRIVATE — seller only, never shown to the customer) / ایڈوانس فیصلہ (صرف سیلر کے لیے)</label>' +
       '<input id="adv-' + o.id + '" value="' + esc(o.advance_decision || '') + '" placeholder="e.g. adjusted / forfeited / refunded">' +
       '<button onclick="saveAdv(' + o.id + ')">Save / محفوظ کریں</button>' +
+      '<br><label>Courier tracking (seller only — customer sees the real tracking ID + courier link) / کوریئر ٹریکنگ</label>' +
+      '<select id="cour-' + o.id + '"><option value="">No courier / کوئی نہیں</option>' +
+      ['TCS','Leopards','PostEx','Trax','M&P'].map(function(c){ return '<option value="' + c + '"' + (o.courier === c ? ' selected' : '') + '>' + c + '</option>'; }).join('') + '</select>' +
+      '<input id="trk-' + o.id + '" value="' + esc(o.tracking_id || '') + '" placeholder="Tracking ID / CN">' +
+      '<button onclick="saveTracking(' + o.id + ')">Save tracking / ٹریکنگ محفوظ کریں</button>' +
       '<br><label>Message to customer (Salaam is added automatically) / کسٹمر کو پیغام</label>' +
       '<input id="msg-' + o.id + '" placeholder="Message">' +
       '<button onclick="sendMsg(' + o.id + ')">Send / بھیجیں</button></div>';
@@ -376,6 +400,10 @@ async function loadOrders(){
 async function setStatus(id, status){ try{ await api('/api/seller/orders/' + id + '/status', 'POST', { status: status }); loadOrders(); }catch(e){ alert(e.message); } }
 async function saveAdv(id){
   try{ await api('/api/seller/orders/' + id + '/advance', 'POST', { decision: document.getElementById('adv-' + id).value }); alert('Saved / محفوظ ہو گیا'); }
+  catch(e){ alert(e.message); }
+}
+async function saveTracking(id){
+  try{ await api('/api/seller/orders/' + id + '/tracking', 'POST', { courier: document.getElementById('cour-' + id).value, tracking_id: document.getElementById('trk-' + id).value }); alert('Tracking saved / ٹریکنگ محفوظ ہو گئی'); loadOrders(); }
   catch(e){ alert(e.message); }
 }
 async function sendMsg(id){

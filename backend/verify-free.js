@@ -144,6 +144,25 @@ try {
   await custB.req("/api/auth/phone-login", "POST", { phone: "03004444444" });
   r = await custB.req("/api/orders/" + orderId);
   check("other customer still CANNOT see this order (404)", r.status === 404);
+
+  console.log("== Honest parcel tracking ==");
+  const seller = jar();
+  r = await seller.req("/api/seller/setup", "POST", { password: "sellerpass123", phone: "seller" });
+  check("seller setup works in test DB", r.status === 201);
+  r = await seller.req("/api/seller/login", "POST", { password: "sellerpass123" });
+  check("seller login works", r.status === 200);
+  r = await seller.req("/api/seller/orders/" + orderId + "/tracking", "POST", { courier: "TCS", tracking_id: "TESTCN123456" });
+  check("seller can set courier + tracking ID on an order", r.status === 200 && r.json.ok === true);
+  r = await cust.req("/api/orders/" + orderId);
+  check("customer sees courier + tracking ID on own order (no advance_decision)",
+    r.status === 200 && r.json.order.courier === "TCS" && r.json.order.tracking_id === "TESTCN123456" && !("advance_decision" in r.json.order));
+  r = await seller.req("/api/seller/orders/" + orderId + "/tracking", "POST", { courier: "FakeCourier", tracking_id: "X" });
+  check("unknown courier rejected", r.status === 400);
+  r = await cust.req("/api/seller/orders/" + orderId + "/tracking", "POST", { courier: "TCS", tracking_id: "X" });
+  check("customer CANNOT set tracking (401)", r.status === 401);
+  r = await anon.req("/");
+  check("Hamara Wada panel + honest tracking wording on storefront",
+    r.text.includes("Hamara Wada") && r.text.includes("Koi jhooti live tracking nahi") && r.text.includes("live GPS nahi hai"));
   r = await anon.req("/api/stats");
   check("public stats counts only, no money keys",
     r.json.products !== undefined && !("revenue" in r.json) && !("total" in r.json));

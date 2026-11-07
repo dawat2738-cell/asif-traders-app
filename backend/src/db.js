@@ -62,6 +62,11 @@ export function openDb(dbPath) {
         CHECK (status IN ('placed','confirmed','dispatched','delivered','cancelled')),
       -- Seller-private advance decision. NEVER exposed to customers.
       advance_decision TEXT,
+      -- Honest parcel tracking (manual, Rank 1): courier + tracking ID the
+      -- seller enters after booking. Shown to the customer with a link to the
+      -- courier's own tracking page. No fake live tracking anywhere.
+      courier TEXT,
+      tracking_id TEXT,
       created_at TEXT NOT NULL DEFAULT (datetime('now')),
       updated_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
@@ -101,6 +106,11 @@ export function openDb(dbPath) {
       value TEXT NOT NULL
     );
   `);
+  // Migration for DBs created before the tracking columns existed (redeploy
+  // normally wipes the DB, but an existing file must not break the server).
+  for (const col of ["courier TEXT", "tracking_id TEXT"]) {
+    try { db.exec(`ALTER TABLE orders ADD COLUMN ${col}`); } catch { /* already present */ }
+  }
   return db;
 }
 

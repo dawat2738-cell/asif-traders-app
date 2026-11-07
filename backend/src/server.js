@@ -84,9 +84,21 @@ function customerOrderView(o) {
     delivery_fee: o.delivery_fee, delivery_note: o.delivery_note,
     advance_due: o.advance_due, total_due: o.total_due,
     payment_terms: o.payment_terms, status: o.status, created_at: o.created_at,
+    // Honest tracking: the real courier + tracking ID, shown to the customer
+    // with a link to the courier's own tracking page. No fake live tracking.
+    courier: o.courier || null, tracking_id: o.tracking_id || null,
     // NOTE: advance_decision is deliberately NOT included here.
   };
 }
+// Courier tracking pages (public, no login needed). The customer pastes the
+// tracking ID there; no pre-filled deep link is assumed for any courier.
+const COURIERS = {
+  TCS: "https://www.tcsexpress.com/track",
+  Leopards: "https://pk.leopardscourier.com/tracking",
+  PostEx: "https://postex.pk/tracking",
+  Trax: "https://trax.pk/tracking",
+  "M&P": "https://mulphilog.com",
+};
 function sellerOrderView(o) { return { ...customerOrderView(o), advance_decision: o.advance_decision }; }
 function orderMessages(orderId) {
   return db.prepare("SELECT id, sender_role, body, created_at FROM order_messages WHERE order_id=? ORDER BY id").all(orderId);
@@ -338,6 +350,25 @@ const server = http.createServer(async (req, res) => {
       const o = db.prepare("SELECT * FROM orders WHERE id=?").get(id);
       if (!o) return sendJson(res, 404, { error: "Order not found." });
       db.prepare("UPDATE orders SET advance_decision=? WHERE id=?").run(String(body.decision || ""), id);
+      return sendJson(res, 200, { ok: true });
+    }
+    if (method === "POST" && p.startsWith("/api/seller/orders/") && p.endsWith("/tracking")) {
+      // Honest tracking (seller only): set/clear the courier + tracking ID.
+      // The customer then sees the real tracking ID and a link to the
+      // courier's own tracking page. No fake live tracking is ever generated.
+      requireSeller(req);
+      const id = Number(p.split("/")[4]);
+      const body = await readBody(req);
+      const o = db.prepare("SELECT * FROM orders WHERE id=?").get(id);
+      if (!o) return sendJson(res, 404, { error: "Order not found." });
+      const courier = String(body.courier || "").trim();
+      const trackingId = String(body.tracking_id || "").trim();
+      if (courier && !Object.prototype.hasOwnProperty.call(COURIERS, courier)) {
+        throw Object.assign(new Error("Unknown courier."), { status: 400 });
+      }
+      if (trackingId.length > 64) throw Object.assign(new Error("Tracking ID is too long."), { status: 400 });
+      db.prepare("UPDATE orders SET courier=?, tracking_id=?, updated_at=datetime('now') WHERE id=?")
+        .run(courier || null, trackingId || null, id);
       return sendJson(res, 200, { ok: true });
     }
     if (method === "POST" && p.startsWith("/api/seller/orders/") && p.endsWith("/message")) {
