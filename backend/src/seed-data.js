@@ -1,7 +1,7 @@
 // Seed data transcribed from ../products-catalog.md (source of truth).
 // status: "available" | "coming_soon" | "price_on_contact"
 // - coming_soon: placeholder products; unorderable, shown as Coming Soon.
-// - price_on_contact: installation / recharge services; NO price is shown.
+// - price_on_contact: installation services; NO price is shown.
 // - variants: for products sold in several types/sizes where the catalog gives
 //   several prices for one entry (5 ft dish, 6 ft dish, dish rods). Variant
 //   labels are neutral ("Type 1"...) because the user did not name the types.
@@ -33,7 +33,6 @@ export const CATEGORIES = [
   { id: "dish", en: "Satellite Dishes", ur: "سیٹلائٹ ڈشز" },
   { id: "diseqc", en: "DiSEqC Switches", ur: "ڈائزیک سوئچز" },
   { id: "installation", en: "Installation Service", ur: "انسٹالیشن سروس" },
-  { id: "recharge", en: "Recharge Services", ur: "ریچارج سروسز" },
 ];
 
 export const PRODUCTS = [
@@ -122,11 +121,4 @@ PRODUCTS.push(
   { id: "diseqc-02", category: "diseqc", en: "Premium X 4x1 Splitter (Waterproof)", ur: "پریمیم ایکس 4x1 اسپلٹر (واٹر پروف)", desc: "Waterproof case, outdoor use, high frequency, strong signals, durable quality, easy installation", price: 500, image: "diseqc-switch-02-premiumx-waterproof.jpg", status: "available" },
   // ---------------- Installation (NO price) ----------------
   { id: "install-01", category: "installation", en: "Satellite Dish Complete Setup / Installation Service", ur: "سیٹلائٹ ڈش مکمل سیٹ اپ / انسٹالیشن سروس", desc: "Complete setup: dish + receiver + LNB + cable. Pakistani & Indian channels (PTV Home, Geo, ARY, HUM, A Plus, 92 News, Dawn News, Samaa, Express, Star Plus, Zee TV, Sony, Colors, DD National, &TV, Aaj Tak, NDTV India and more). HD/Full HD quality, crystal clear picture, no monthly charges, free channel scanning, lifetime support, home service available, fast & reliable installation. Setup and deal vary by channels and customer requirements.", price: null, image: "installation-01-complete-setup.png", status: "price_on_contact" },
-  // ---------------- Recharge Services (NO prices) ----------------
-  { id: "recharge-iptv", category: "recharge", en: "IPTV Service", ur: "آئی پی ٹی وی سروس", desc: "All world channels (HD/SD), 1000+ live TV channels, Pakistani & Indian channels, sports, movies, kids, news, documentary, music, religious. 24/7 support, instant recharge, safe & secure. Trial FREE.", price: null, image: "recharge-01-all-services.png", status: "price_on_contact" },
-  { id: "recharge-forever", category: "recharge", en: "Forever Recharge", ur: "فوریور ریچارج", desc: "Satellite receiver recharge service, fast & secure, instant recharge, 24/7 support.", price: null, image: "recharge-01-all-services.png", status: "price_on_contact" },
-  { id: "recharge-funcam", category: "recharge", en: "Funcam Recharge", ur: "فن کیم ریچارج", desc: "Satellite receiver recharge service, fast & secure, instant recharge, 24/7 support.", price: null, image: "recharge-01-all-services.png", status: "price_on_contact" },
-  { id: "recharge-gshare", category: "recharge", en: "G-Share Recharge", ur: "جی شیئر ریچارج", desc: "Satellite receiver recharge service, fast & secure, instant recharge, 24/7 support.", price: null, image: "recharge-01-all-services.png", status: "price_on_contact" },
-  { id: "recharge-nashare", category: "recharge", en: "Nashare Recharge", ur: "نا شیئر ریچارج", desc: "Satellite receiver recharge service, fast & secure, instant recharge, 24/7 support.", price: null, image: "recharge-01-all-services.png", status: "price_on_contact" },
-  { id: "recharge-dishtv", category: "recharge", en: "Dish TV Recharge", ur: "ڈش ٹی وی ریچارج", desc: "Dish TV recharge service, fast & secure, instant recharge, 24/7 support.", price: null, image: "recharge-01-all-services.png", status: "price_on_contact" },
 );

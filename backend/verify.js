@@ -74,11 +74,11 @@ try {
   console.log("== Catalog ==");
   r = await anon.req("/api/products");
   const products = r.json.products;
-  check("69 products seeded", products.length === 69, `(got ${products.length})`);
-  check("43 available / 19 coming_soon / 7 price_on_contact",
+  check("63 products seeded", products.length === 63, `(got ${products.length})`);
+  check("43 available / 19 coming_soon / 1 price_on_contact",
     products.filter((p) => p.status === "available").length === 43 &&
     products.filter((p) => p.status === "coming_soon").length === 19 &&
-    products.filter((p) => p.status === "price_on_contact").length === 7);
+    products.filter((p) => p.status === "price_on_contact").length === 1);
   const premium = products.find((p) => p.id === "android-box-01");
   check("Premium Max Rs 6000", premium && premium.price === 6000);
   const chinaPlate = products.find((p) => p.id === "plate-plastic-china");
@@ -92,8 +92,7 @@ try {
     dish5 && dish5.variants.map((v) => v.price).join(",") === "9000,15000,25000,35000");
   const install = products.find((p) => p.id === "install-01");
   check("installation price null (Price on Contact)", install && install.price === null && install.status === "price_on_contact");
-  const iptv = products.find((p) => p.id === "recharge-iptv");
-  check("IPTV price null (Price on Contact)", iptv && iptv.price === null);
+  check("no recharge/IPTV products remain", !products.some((p) => /recharge-iptv|recharge-forever|recharge-funcam|recharge-gshare|recharge-nashare|recharge-dishtv/.test(p.id)));
   check("no invented payment numbers in public catalog",
     !JSON.stringify(products).match(/0300\d{7}|03\d{2}-\d{7}/));
 

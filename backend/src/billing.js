@@ -7,7 +7,6 @@
 //              full payment is taken in advance, delivery charges are the
 //              customer's. The bill shows an on-the-spot note, no amount.
 // Installation: part advance, rest after installation at the customer's place.
-// IPTV/recharge: advance payment only; IPTV trial FREE.
 // Price-on-contact services contribute no invented price to any bill.
 
 export const LAHORE_DELIVERY_MIN = 500;
@@ -67,7 +66,7 @@ export function computeBill(items, deliveryZone, orderKinds) {
     // travel/installation arrangement) is settled with the seller privately.
     deliveryFee = null;
     deliveryNote = "To be settled with the seller / سیلر سے طے ہوگا";
-    paymentTerms = "Price on Contact — seller confirms the amount; installation: part advance, rest after installation; IPTV/recharge: advance only, IPTV trial FREE / قیمت رابطہ پر — سیلر رقم بتائے گا؛ انسٹالیشن: کچھ ایڈوانس، باقی انسٹالیشن کے بعد؛ IPTV/ریچارج: صرف ایڈوانس، IPTV ٹرائل مفت";
+    paymentTerms = "Price on Contact — seller confirms the amount; installation: part advance, rest after installation / قیمت رابطہ پر — سیلر رقم بتائے گا؛ انسٹالیشن: کچھ ایڈوانس، باقی انسٹالیشن کے بعد";
     advanceDue = 0; // seller sets it privately after contact
   }
   const totalDue = subtotal + (deliveryFee || 0);

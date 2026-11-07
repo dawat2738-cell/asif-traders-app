@@ -30,8 +30,7 @@ Muse artifact.** Runs anywhere Node.js 22.5+ runs. Zero dependencies
   Rs 1000 advance, rest on delivery. Out-of-Lahore: charges confirmed on
   the spot (Leopard mostly, or TCS), full payment in advance, and the
   bill **never** shows an Rs 500 figure. Installation: part advance,
-  rest after installation. IPTV/recharge: advance only, IPTV trial FREE.
-  Installation and recharge services show **Price on Contact** — no price
+  rest after installation. Installation services show **Price on Contact** — no price
   is ever invented. No public azala, replacement, cancellation, or refund
   promise exists anywhere; those decisions stay private and seller-only,
   and the scripted chatbot only forwards such questions to the seller.
