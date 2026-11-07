@@ -1,4 +1,6 @@
 // Seed data transcribed from ../products-catalog.md (source of truth).
+// Removed 2026-11-07 (Google policy): IPTV Service, Forever, Funcam,
+// G-Share, Nashare recharge. Dish TV Recharge kept (lawful DTH top-up).
 // status: "available" | "coming_soon" | "price_on_contact"
 // - coming_soon: placeholder products; unorderable, shown as Coming Soon.
 // - price_on_contact: installation / recharge services; NO price is shown.
