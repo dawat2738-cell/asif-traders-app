@@ -177,6 +177,38 @@ try {
   r = await custA.req("/api/orders/" + orderId);
   check("tracking: placed -> confirmed -> dispatched -> delivered", r.json.order.status === "delivered");
 
+  console.log("== Honest tracking: Own Rider ==");
+  r = await seller.req("/api/seller/orders/" + orderId + "/tracking", "POST", { courier: "Own Rider", rider_name: "Ahmed Rider", rider_phone: "03001234567" });
+  check("seller sets Own Rider + rider name/phone", r.status === 200 && r.json.ok === true);
+  r = await custA.req("/api/orders/" + orderId);
+  check("customer sees rider name + phone, no tracking ID, no advance_decision",
+    r.status === 200 && r.json.order.courier === "Own Rider" && r.json.order.rider_name === "Ahmed Rider" &&
+    r.json.order.rider_phone === "03001234567" && r.json.order.tracking_id === null &&
+    !("advance_decision" in r.json.order));
+  r = await seller.req("/api/seller/orders/" + orderId + "/tracking", "POST", { courier: "Own Rider", rider_name: "A".repeat(65), rider_phone: "03001234567" });
+  check("rider name over 64 chars rejected", r.status === 400);
+  r = await seller.req("/api/seller/orders/" + orderId + "/tracking", "POST", { courier: "Own Rider", rider_name: "Ahmed Rider", rider_phone: "1".repeat(21) });
+  check("rider phone over 20 chars rejected", r.status === 400);
+  r = await seller.req("/api/seller/orders/" + orderId + "/tracking", "POST", { courier: "TCS", tracking_id: "TESTCN999" });
+  check("TCS + CN after rider clears rider fields", r.status === 200);
+  r = await custA.req("/api/orders/" + orderId);
+  check("customer sees CN, rider fields cleared",
+    r.status === 200 && r.json.order.courier === "TCS" && r.json.order.tracking_id === "TESTCN999" &&
+    r.json.order.rider_name === null && r.json.order.rider_phone === null);
+  r = await seller.req("/api/seller/orders/" + orderId + "/tracking", "POST", { courier: "", tracking_id: "", rider_name: "", rider_phone: "" });
+  check("clearing courier clears CN and rider fields", r.status === 200);
+  r = await custA.req("/api/orders/" + orderId);
+  check("cleared order shows no courier, no CN, no rider",
+    r.status === 200 && r.json.order.courier === null && r.json.order.tracking_id === null &&
+    r.json.order.rider_name === null && r.json.order.rider_phone === null);
+  r = await anon.req("/seller");
+  check("seller dashboard offers Own Rider + rider name/phone fields",
+    r.status === 200 && r.text.includes("Own Rider") && r.text.includes("رائیڈر کا نام") && r.text.includes("رائیڈر کا فون"));
+  r = await anon.req("/");
+  check("storefront rider note + tel link present, Hamara Wada covers rider",
+    r.text.includes("Rider se rabta karein") && r.text.includes("tel:") &&
+    r.text.includes("اپنے رائیڈر کی ڈلیوری پر رائیڈر کا نام + فون"));
+
   console.log("== Reviews + moderation ==");
   r = await custA.req("/api/reviews", "POST", { productId: "android-box-01", rating: 5, body: "Great box, fast delivery." });
   check("review after delivery accepted", r.status === 201);

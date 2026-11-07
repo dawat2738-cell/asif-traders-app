@@ -86,7 +86,9 @@ function customerOrderView(o) {
     payment_terms: o.payment_terms, status: o.status, created_at: o.created_at,
     // Honest tracking: the real courier + tracking ID, shown to the customer
     // with a link to the courier's own tracking page. No fake live tracking.
+    // Own-rider deliveries: the rider's name + phone instead of a courier CN.
     courier: o.courier || null, tracking_id: o.tracking_id || null,
+    rider_name: o.rider_name || null, rider_phone: o.rider_phone || null,
     // NOTE: advance_decision is deliberately NOT included here.
   };
 }
@@ -353,9 +355,13 @@ const server = http.createServer(async (req, res) => {
       return sendJson(res, 200, { ok: true });
     }
     if (method === "POST" && p.startsWith("/api/seller/orders/") && p.endsWith("/tracking")) {
-      // Honest tracking (seller only): set/clear the courier + tracking ID.
-      // The customer then sees the real tracking ID and a link to the
-      // courier's own tracking page. No fake live tracking is ever generated.
+      // Honest tracking (seller only). Two honest cases, never mixed:
+      //  - courier company: store the real tracking ID (CN); rider fields cleared.
+      //  - "Own Rider": store the rider's name + phone (a rider has no CN);
+      //    the customer calls the rider. No live GPS anywhere.
+      //  - no courier: clear tracking ID and rider fields.
+      // The customer then sees the real tracking ID + courier link, or the
+      // rider's name + phone. No fake live tracking is ever generated.
       requireSeller(req);
       const id = Number(p.split("/")[4]);
       const body = await readBody(req);
@@ -363,12 +369,20 @@ const server = http.createServer(async (req, res) => {
       if (!o) return sendJson(res, 404, { error: "Order not found." });
       const courier = String(body.courier || "").trim();
       const trackingId = String(body.tracking_id || "").trim();
-      if (courier && !Object.prototype.hasOwnProperty.call(COURIERS, courier)) {
+      const riderName = String(body.rider_name || "").trim();
+      const riderPhone = String(body.rider_phone || "").trim();
+      const isRider = courier === "Own Rider";
+      if (courier && !isRider && !Object.prototype.hasOwnProperty.call(COURIERS, courier)) {
         throw Object.assign(new Error("Unknown courier."), { status: 400 });
       }
       if (trackingId.length > 64) throw Object.assign(new Error("Tracking ID is too long."), { status: 400 });
-      db.prepare("UPDATE orders SET courier=?, tracking_id=?, updated_at=datetime('now') WHERE id=?")
-        .run(courier || null, trackingId || null, id);
+      if (riderName.length > 64) throw Object.assign(new Error("Rider name is too long."), { status: 400 });
+      if (riderPhone.length > 20) throw Object.assign(new Error("Rider phone is too long."), { status: 400 });
+      const finalTracking = isRider ? null : (courier ? trackingId || null : null);
+      const finalName = isRider ? riderName || null : null;
+      const finalPhone = isRider ? riderPhone || null : null;
+      db.prepare("UPDATE orders SET courier=?, tracking_id=?, rider_name=?, rider_phone=?, updated_at=datetime('now') WHERE id=?")
+        .run(courier || null, finalTracking, finalName, finalPhone, id);
       return sendJson(res, 200, { ok: true });
     }
     if (method === "POST" && p.startsWith("/api/seller/orders/") && p.endsWith("/message")) {

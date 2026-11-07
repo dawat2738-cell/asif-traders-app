@@ -160,9 +160,38 @@ try {
   check("unknown courier rejected", r.status === 400);
   r = await cust.req("/api/seller/orders/" + orderId + "/tracking", "POST", { courier: "TCS", tracking_id: "X" });
   check("customer CANNOT set tracking (401)", r.status === 401);
+  // Own Rider: the shop's own rider has no courier CN — customer sees
+  // the rider's name + a callable phone, never a courier link or fake GPS.
+  r = await seller.req("/api/seller/orders/" + orderId + "/tracking", "POST", { courier: "Own Rider", rider_name: "Ahmed Rider", rider_phone: "03001234567" });
+  check("seller can set Own Rider + rider name/phone", r.status === 200 && r.json.ok === true);
+  r = await cust.req("/api/orders/" + orderId);
+  check("customer sees rider name + phone, tracking ID cleared",
+    r.status === 200 && r.json.order.courier === "Own Rider" && r.json.order.rider_name === "Ahmed Rider" &&
+    r.json.order.rider_phone === "03001234567" && r.json.order.tracking_id === null);
+  r = await seller.req("/api/seller/orders/" + orderId + "/tracking", "POST", { courier: "Own Rider", rider_name: "x".repeat(65), rider_phone: "03001234567" });
+  check("rider name over 64 chars rejected", r.status === 400);
+  r = await seller.req("/api/seller/orders/" + orderId + "/tracking", "POST", { courier: "TCS", tracking_id: "TESTCN123456" });
+  check("company courier + CN still works after rider, rider fields cleared", r.status === 200);
+  r = await cust.req("/api/orders/" + orderId);
+  check("customer sees CN again, rider fields cleared",
+    r.status === 200 && r.json.order.courier === "TCS" && r.json.order.tracking_id === "TESTCN123456" &&
+    r.json.order.rider_name === null && r.json.order.rider_phone === null);
+  r = await seller.req("/api/seller/orders/" + orderId + "/tracking", "POST", { courier: "", tracking_id: "", rider_name: "", rider_phone: "" });
+  check("clearing courier clears tracking ID and rider fields", r.status === 200);
+  r = await cust.req("/api/orders/" + orderId);
+  check("cleared order shows no courier, no CN, no rider",
+    r.status === 200 && r.json.order.courier === null && r.json.order.tracking_id === null &&
+    r.json.order.rider_name === null && r.json.order.rider_phone === null);
+  r = await anon.req("/seller");
+  check("seller dashboard has Own Rider option + rider name/phone fields",
+    r.status === 200 && r.text.includes("Own Rider") && r.text.includes("رائیڈر کا نام") && r.text.includes("رائیڈر کا فون"));
   r = await anon.req("/");
   check("Hamara Wada panel + honest tracking wording on storefront",
     r.text.includes("Hamara Wada") && r.text.includes("Koi jhooti live tracking nahi") && r.text.includes("live GPS nahi hai"));
+  check("Hamara Wada first promise covers courier CN and own-rider name/phone",
+    r.text.includes("apne rider ki delivery par rider ka naam + phone") && r.text.includes("اپنے رائیڈر کی ڈلیوری پر رائیڈر کا نام + فون"));
+  check("storefront rider note + tel link present in tracking display",
+    r.text.includes("Rider se rabta karein") && r.text.includes("tel:"));
   r = await anon.req("/api/stats");
   check("public stats counts only, no money keys",
     r.json.products !== undefined && !("revenue" in r.json) && !("total" in r.json));

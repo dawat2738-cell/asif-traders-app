@@ -111,7 +111,7 @@ export function storefrontHTML(shop, opts = {}) {
   "<div class=\"panel\"><h2>Latest News / تازہ ترین خبریں</h2><div id=\"news\"></div></div>" +
   "<div class=\"panel\"><h2>Customer Reviews / کسٹمر ریویوز</h2><div id=\"reviews\"></div></div>" +
   "<div class=\"panel\"><h2>Hamara Wada / ہمارا وعدہ</h2>" +
-  "<p>• Har parcel ki <b>asal tracking ID</b> di jayegi, courier ki official tracking page ka link saath. / ہر پارسل کی اصل ٹریکنگ آئی ڈی دی جائے گی، کوریئر کی آفیشل ٹریکنگ پیج کا لنک ساتھ۔</p>" +
+  "<p>• Har parcel ki <b>asal tracking</b> di jayegi — courier delivery par asal tracking ID + courier ki official tracking page ka link; apne rider ki delivery par rider ka naam + phone. / ہر پارسل کی اصل ٹریکنگ دی جائے گی — کوریئر ڈلیوری پر اصل ٹریکنگ آئی ڈی + کوریئر کی آفیشل ٹریکنگ پیج کا لنک؛ اپنے رائیڈر کی ڈلیوری پر رائیڈر کا نام + فون۔</p>" +
   "<p>• <b>Koi jhooti live tracking nahi</b> — status sirf tab badalta hai jab courier parcel scan karta hai. Ye live GPS nahi hai. / کوئی جھوٹی لائیو ٹریکنگ نہیں — اسٹیٹس صرف تب بدلتا ہے جب کوریئر پارسل اسکین کرتا ہے۔ یہ لائیو GPS نہیں ہے۔</p>" +
   "<p>• Delivery ki tareekh sirf <b>andaza</b> hai — 'Estimated delivery' likh kar di jayegi. / ڈلیوری کی تاریخ صرف اندازہ ہے — 'Estimated delivery' لکھ کر دی جائے گی۔</p>" +
   "<p>• Bill mein sab saaf — subtotal, delivery, advance — koi chhupi hui baat nahi. / بل میں سب صاف — سب ٹوٹل، ڈلیوری، ایڈوانس — کوئی چھپی ہوئی بات نہیں۔</p>" +
@@ -233,9 +233,18 @@ async function showMine(){
   }catch(e){ document.getElementById('myorders').textContent = 'Please login first / پہلے لاگ ان کریں'; document.getElementById('mine').style.display = 'block'; }
 }
 // Honest tracking: show the real tracking ID + a link to the courier's own
-// tracking page. No fake live tracking, no countdown pretending to be live.
+// tracking page — or, for the shop's own rider (who has no courier CN), the
+// rider's name + a callable phone number. No fake live tracking, no countdown
+// pretending to be live.
 var TRACK_URLS = { 'TCS': 'https://www.tcsexpress.com/track', 'Leopards': 'https://pk.leopardscourier.com/tracking', 'PostEx': 'https://postex.pk/tracking', 'Trax': 'https://trax.pk/tracking', 'M&P': 'https://mulphilog.com' };
 function trackHtml(o){
+  if(o.courier === 'Own Rider' && (o.rider_name || o.rider_phone)){
+    var parts = [];
+    if(o.rider_name) parts.push('<span class="gold">Rider / رائیڈر: ' + esc(o.rider_name) + '</span>');
+    if(o.rider_phone) parts.push('<a href="tel:' + esc(String(o.rider_phone).replace(/[^0-9+]/g, '')) + '">' + esc(o.rider_phone) + '</a>');
+    return '<br>' + parts.join(' ') +
+    '<br><span class="small">Rider se rabta karein — call karein; ye live GPS nahi hai. / رائیڈر سے رابطہ کریں — کال کریں؛ یہ لائیو GPS نہیں ہے۔</span>';
+  }
   if(o.tracking_id){
     var u = TRACK_URLS[o.courier] || '';
     return '<br><span class="gold">Tracking ID / ٹریکنگ آئی ڈی: ' + esc(o.tracking_id) + '</span>' +
@@ -386,15 +395,17 @@ async function loadOrders(){
       '<br><label>Advance decision (PRIVATE — seller only, never shown to the customer) / ایڈوانس فیصلہ (صرف سیلر کے لیے)</label>' +
       '<input id="adv-' + o.id + '" value="' + esc(o.advance_decision || '') + '" placeholder="e.g. adjusted / forfeited / refunded">' +
       '<button onclick="saveAdv(' + o.id + ')">Save / محفوظ کریں</button>' +
-      '<br><label>Courier tracking (seller only — customer sees the real tracking ID + courier link) / کوریئر ٹریکنگ</label>' +
-      '<select id="cour-' + o.id + '"><option value="">No courier / کوئی نہیں</option>' +
-      ['TCS','Leopards','PostEx','Trax','M&P'].map(function(c){ return '<option value="' + c + '"' + (o.courier === c ? ' selected' : '') + '>' + c + '</option>'; }).join('') + '</select>' +
-      '<input id="trk-' + o.id + '" value="' + esc(o.tracking_id || '') + '" placeholder="Tracking ID / CN">' +
+      '<br><label>Courier / rider tracking (seller only — customer sees the real tracking ID + courier link, or the rider\'s name + phone) / کوریئر / رائیڈر ٹریکنگ</label>' +
+      '<select id="cour-' + o.id + '" onchange="toggleRider(' + o.id + ')"><option value="">No courier / کوئی نہیں</option>' +
+      [['TCS','TCS'],['Leopards','Leopards'],['PostEx','PostEx'],['Trax','Trax'],['M&P','M&P'],['Own Rider','Own Rider / اپنا رائیڈر']].map(function(p){ return '<option value="' + p[0] + '"' + (o.courier === p[0] ? ' selected' : '') + '>' + p[1] + '</option>'; }).join('') + '</select>' +
+      '<span id="trk-wrap-' + o.id + '"><input id="trk-' + o.id + '" value="' + esc(o.tracking_id || '') + '" placeholder="Tracking ID / CN"></span>' +
+      '<span id="rider-wrap-' + o.id + '" style="display:none"><input id="rider-name-' + o.id + '" value="' + esc(o.rider_name || '') + '" placeholder="Rider name / رائیڈر کا نام"><input id="rider-phone-' + o.id + '" value="' + esc(o.rider_phone || '') + '" placeholder="Rider phone / رائیڈر کا فون"></span>' +
       '<button onclick="saveTracking(' + o.id + ')">Save tracking / ٹریکنگ محفوظ کریں</button>' +
       '<br><label>Message to customer (Salaam is added automatically) / کسٹمر کو پیغام</label>' +
       '<input id="msg-' + o.id + '" placeholder="Message">' +
       '<button onclick="sendMsg(' + o.id + ')">Send / بھیجیں</button></div>';
     }).join('') : 'No orders yet / ابھی کوئی آرڈر نہیں';
+    d.orders.forEach(function(o){ toggleRider(o.id); });
   }catch(e){ document.getElementById('orders').textContent = 'Please login first / پہلے لاگ ان کریں'; }
 }
 async function setStatus(id, status){ try{ await api('/api/seller/orders/' + id + '/status', 'POST', { status: status }); loadOrders(); }catch(e){ alert(e.message); } }
@@ -402,8 +413,15 @@ async function saveAdv(id){
   try{ await api('/api/seller/orders/' + id + '/advance', 'POST', { decision: document.getElementById('adv-' + id).value }); alert('Saved / محفوظ ہو گیا'); }
   catch(e){ alert(e.message); }
 }
+function toggleRider(id){
+  var sel = document.getElementById('cour-' + id);
+  var isRider = sel && sel.value === 'Own Rider';
+  var rw = document.getElementById('rider-wrap-' + id), tw = document.getElementById('trk-wrap-' + id);
+  if(rw) rw.style.display = isRider ? 'block' : 'none';
+  if(tw) tw.style.display = isRider ? 'none' : 'block';
+}
 async function saveTracking(id){
-  try{ await api('/api/seller/orders/' + id + '/tracking', 'POST', { courier: document.getElementById('cour-' + id).value, tracking_id: document.getElementById('trk-' + id).value }); alert('Tracking saved / ٹریکنگ محفوظ ہو گئی'); loadOrders(); }
+  try{ await api('/api/seller/orders/' + id + '/tracking', 'POST', { courier: document.getElementById('cour-' + id).value, tracking_id: document.getElementById('trk-' + id).value, rider_name: document.getElementById('rider-name-' + id).value, rider_phone: document.getElementById('rider-phone-' + id).value }); alert('Tracking saved / ٹریکنگ محفوظ ہو گئی'); loadOrders(); }
   catch(e){ alert(e.message); }
 }
 async function sendMsg(id){

@@ -65,8 +65,12 @@ export function openDb(dbPath) {
       -- Honest parcel tracking (manual, Rank 1): courier + tracking ID the
       -- seller enters after booking. Shown to the customer with a link to the
       -- courier's own tracking page. No fake live tracking anywhere.
+      -- Own-rider deliveries: the rider has no courier CN, so the seller
+      -- enters the rider's name + phone instead; the customer calls the rider.
       courier TEXT,
       tracking_id TEXT,
+      rider_name TEXT,
+      rider_phone TEXT,
       created_at TEXT NOT NULL DEFAULT (datetime('now')),
       updated_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
@@ -108,7 +112,7 @@ export function openDb(dbPath) {
   `);
   // Migration for DBs created before the tracking columns existed (redeploy
   // normally wipes the DB, but an existing file must not break the server).
-  for (const col of ["courier TEXT", "tracking_id TEXT"]) {
+  for (const col of ["courier TEXT", "tracking_id TEXT", "rider_name TEXT", "rider_phone TEXT"]) {
     try { db.exec(`ALTER TABLE orders ADD COLUMN ${col}`); } catch { /* already present */ }
   }
   return db;
